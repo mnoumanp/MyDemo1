@@ -1,8 +1,10 @@
-only running container
-sudo docker ps 
+Day 1 from 2nd Half
 
-all container
-sudo docker ps -a
+	=== only running container
+	sudo docker ps 
+
+	=== all container
+	sudo docker ps -a
 
 To go inside the container
 sudo docker exec -i -t <container-name> /bin/bash 
