@@ -1,0 +1,210 @@
+only running container
+sudo docker ps 
+
+all container
+sudo docker ps -a
+
+To go inside the container
+sudo docker exec -i -t <container-name> /bin/bash 
+
+creating image from existing image
+sudo docker commit IMAGE ID ubuntumynewimage
+EX : sudo docker commit d47a65b6b79a ubuntumynewimage
+
+creating a contaniner from 
+sudo docker run -i -t --name containerName ubuntumynewimage
+EX :sudo docker run -i -t --name myubuntuc2 ubuntumynewimage
+	sudo docker run -i -t --name mytomcat tomcat:8.0	
+	sudo docker run -i -t -p 8888:8080 --name mytomcat tomcat:8.0	running the container in foreground
+	docker pull tomcat:8.0
+	sudo docker run -i -t -d -p 8888:8080 --name mytomcat tomcat:8.0 running the container in background
+	sudo docker run -i -t -p 8888:8080 --name mywebapp myapplicationimage:1.0
+	
+start and stop container
+	sudo   containerName
+	sudo docker start my_container
+	
+	=== to remove the image
+	    sudo docker rmi <image-name or id>
+	
+	
+	====1.dockerising an aplication. we have war file and docker file in same folder then type this command
+		docker build  -t myapplicationimage:1.0 .
+		
+	===
+		sudo docker build --help
+	
+	===	to push the image in docker hub
+		sudo docker tag myapplicationimage:1.0 9741223883/myappimage
+		docker push 9741223883/myappimage
+	
+	==== docker networks
+		  docker network ls
+		  sudo docker run -dit --name myalpine1 alpine ash
+		  sudo docker container ls
+		  sudo docker inspect <container id>
+		  sudo docker network inspect
+		  
+	====connnecting the contanier to different network
+		 
+		 docker run -dit --name <containerName> --network  <network name> alpine ash
+		 docker run -dit --name alpine1         --network  alpine-net     alpine ash
+		
+		
+	====DAY 2 
+	====Linking docker containers
+		
+		docker pull redis
+		docker run -d --name redis1 redis
+	
+	===linking the above container with below
+			docker run -it --link redis1:redis --name redisclient1 busybox
+			
+			ping redis1
+			ping redis
+			
+	=== it will show info of modification		
+			set 
+			
+	=== remove the container and add redis in place of busybox
+		docker rm redisclient1
+		docker run -it --link redis1:redis --name redisclient1 redis
+		
+	=== to connect to redis client
+		redis-cli -h redis	
+		set name "Nouman"
+		
+	=== w r t mangodb
+		go inside this container
+		docker run -it --name mymongodb mongo /bin/bash
+		server i am starting 
+		mongod
+		
+	====
+		docker run -dit --rm --name mangodbserver1 mongo
+		docker run -it --link  mangodbserver1:mangodbserver mongo /bin/bash
+		env
+		
+		mongo --host mangodbserver --port 27017
+		show dbs
+		use empdb
+		db.employee.insert({"name":"Nouman","dept":"L&D"})
+	
+	
+	=== only in local
+		npm install express --save
+		
+	====running node container in connecting with mongodbserver1
+		docker run -it --link  mangodbserver1:mangodbserver node /bin/bash
+	
+	==== crating image 
+		docker build --tag mynodeappwithmongo .
+	
+	====
+		docker run -d -p 9999:8080 --link  mangodbserver1:mongodbserver mynodeappwithmongo 
+		docker run -it -p 9999:8080 --link  mangodbserver1:mongodbserver mynodeappwithmongo /bin/bash
+		
+	==== docker compose   ===  https://docs.docker.com/compose/install/
+		docker-compose build
+		docker-compose ps
+		docker-compose up
+		
+	==== day 3 client server architecture
+		docker run -d -p 27017:27017 --name mymongodb1 mongo
+		
+	====docker machine		
+		docker-machine ls
+		docker-machine env default
+		docker-machine stop default
+		docker-machine stop docker-host2
+		docker-machine start default
+		docker-machine ip
+		docker-machine ssh default ==go inside docker machine
+		docker-machine ssh default free
+		docker-machine ssh default docker images
+		
+		docker-machine create --driver virtualbox docker-host3
+		
+		docker-machine ssh docker-host2 docker run -p 8080:80 nginx
+		
+		docker-machine ssh docker-host2 docker ps
+		docker-machine ssh default docker ps
+		
+		
+	==== docker-swarm
+			docker-machine ip default as manager
+			docker-machine ip docker-host2
+			
+			docker swarm init --advertise-addr MANAGER_IP
+			docker swarm init --advertise-addr 192.168.99.100
+			
+	===to join to manager			
+	====we willget the below command from manager(default)
+	
+		docker swarm join --token SWMTKN-1-1mn3qyht4ar18agk64rucu7u207dsy3xnw0hvjwmj7jtu135w5-bl0qa2mnn6xx4ii4vjvnq4tr0 192.168.99.100:2377
+		
+	===to know number host or docker machine in cluster we need to run in manager (default is now we have made manager)
+		docker-machine env default
+		docker node ls
+		
+	====example 1	
+		docker service create --replicas 5 -p 8888:80 --name web nginx
+		 
+	====example 2
+		docker service create --replicas 5 -p 8888:80 --name helloworld wordpress
+		
+	====to know the number of  service		
+		docker service ls
+		
+	====to know the details of the service	
+		docker service inspect web   
+		docker node ps $(docker node ls -q)
+		 
+	==== to know the details of number service in different container 
+		 docker service ps web  
+		 
+		docker service scale web=3
+		 
+		 
+		 docker node inspect docker-host2
+		 
+		 docker service ls
+		 
+		 docker service rm web
+		
+		docker service ps web	
+		
+		
+	==== VOLUME	 mounting
+		docker run -d --name devtest --mount source=/anil , target=/data nginx
+		docker run -d --name devtest -v /anil:/data nginx
+		
+		
+		inside docker machine container folder connecting with each other,
+		if we do any mofication in any of these folder it will be reflected to other
+						   docker machine folder
+		docker run -it -v  /anil:                       /data ubuntu /bin/bash
+		
+		docker run -it -v /anil:/data ubuntu /bin/bash
+		
+		docker exec  <container-name/ID>  ls -l
+		
+	====logs	
+		docker logs 952a
+		docker logs 952a --details
+		docker logs 952a --tail 2
+		
+	====tomcat cantainer volume mouinting 
+	
+	===integration of jenksin with docker
+		java -jar jenkins_2_130.war
+		
+	==== docker pull jenkins
+			sudo docker run -i -t -p 9999:8080 --name myjenkinscontainer jenkins/jenkins
+			70339bffeb9d48aa9a36e75d4992d497
+		
+		
+	=== Net start com.docker.service	
+
+	=== docker-compose up -d
+	
